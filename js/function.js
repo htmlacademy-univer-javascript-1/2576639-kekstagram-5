@@ -1,11 +1,11 @@
-function checkStringLength(str, maxLength) {
+/*function checkStringLength(str, maxLength) {
   return str.length <= maxLength;
 }
 
 function isPalindrome (str) {
   const normalizedStr = str.toLowerCase().replace(/\s+/g, '');
   return normalizedStr === normalizedStr.split('').reverse().join('');
-}
+}*/
 
 function isMeetingWithinWorkHours(startOfDay, endOfDay, meetingStart, meetingTime) {
   function timeToMinutes(time) {
