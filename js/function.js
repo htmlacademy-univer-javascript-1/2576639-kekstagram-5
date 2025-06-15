@@ -1,25 +1,23 @@
-/*function checkStringLength(str, maxLength) {
-  return str.length <= maxLength;
+export function isLineLengthLessOrEqual(line, maxLength) {
+  return line.length <= maxLength;
 }
 
-function isPalindrome (str) {
-  const normalizedStr = str.toLowerCase().replace(/\s+/g, '');
-  return normalizedStr === normalizedStr.split('').reverse().join('');
-}*/
-
-function isMeetingWithinWorkHours(startOfDay, endOfDay, meetingStart, meetingTime) {
-  function timeToMinutes(time) {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
+export function isPalindrome(line) {
+  const lowercase = line.toLowerCase().replaceAll(' ', '');
+  for (let i = 0; i < lowercase.length / 2 - 1; i++) {
+    if (lowercase[i] !== lowercase[i + lowercase.length - 1 - i * 2]) {
+      return false;
+    }
   }
-
-  const startDayMinutes = timeToMinutes(startOfDay);
-  const endDayMinutes = timeToMinutes(endOfDay);
-  const meetingStartMinutes = timeToMinutes(meetingStart);
-  const meetingEndMinutes = meetingStartMinutes + meetingTime;
-
-  return meetingStartMinutes >= startDayMinutes && meetingEndMinutes <= endDayMinutes;
+  return true;
 }
 
-isMeetingWithinWorkHours('08:00', '17:30', '14:00', 90);
-isMeetingWithinWorkHours('8:0', '10:0', '8:0', 120);
+export const convertH2M = function(timeInHour) {
+  const timeParts = timeInHour.split(':');
+  return Number(timeParts[0]) * 60 + Number(timeParts[1]);
+};
+
+export const isMeetingIncludedInWorkingDay = function(startDay, endDay, startMeeting, meetingTime) {
+  const endMeeting = convertH2M(startMeeting) + meetingTime;
+  return (convertH2M(startDay) <= convertH2M(startMeeting) && endMeeting <= convertH2M(endDay));
+};

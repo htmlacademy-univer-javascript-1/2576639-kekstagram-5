@@ -6,74 +6,90 @@ const commentsLoader = bigPicture.querySelector('.comments-loader');
 const bigPictureImg = bigPicture.querySelector('.big-picture__img img');
 const likesCount = bigPicture.querySelector('.likes-count');
 const socialCaption = bigPicture.querySelector('.social__caption');
-const socialFooter = bigPicture.querySelector('.social__footer');
 
-const renderComments = (comments) => {
-  socialComments.innerHTML = '';
+let currentComments = [];
+let commentsShown = 0;
+const COMMENTS_PER_PORTION = 5;
 
-  comments.forEach((comment) => {
-    const commentElement = document.createElement('li');
-    commentElement.classList.add('social__comment');
+const createComment = (commentData) => {
+  const comment = document.createElement('li');
+  comment.classList.add('social__comment');
 
-    commentElement.innerHTML = `
-      <img class="social__picture" src="${comment.avatar}" alt="${comment.name}" width="35" height="35">
-      <p class="social__text">${comment.message}</p>
-    `;
+  comment.innerHTML = `
+    <img class="social__picture" src="${commentData.avatar}" alt="${commentData.name}" width="35" height="35">
+    <p class="social__text">${commentData.message}</p>
+  `;
 
-    socialComments.appendChild(commentElement);
+  return comment;
+};
+
+const renderCommentsPortion = () => {
+  const fragment = document.createDocumentFragment();
+  const commentsToShow = currentComments.slice(commentsShown, commentsShown + COMMENTS_PER_PORTION);
+  commentsToShow.forEach((comment) => {
+    fragment.appendChild(createComment(comment));
   });
+  socialComments.appendChild(fragment);
+  commentsShown += commentsToShow.length;
+  socialCommentCount.innerHTML = `${commentsShown} из <span class="comments-count">${currentComments.length}</span> комментариев`;
+  if (commentsShown >= currentComments.length) {
+    commentsLoader.classList.add('hidden');
+  }
+};
+
+const onCommentsLoaderClick = () => {
+  renderCommentsPortion();
+};
+
+const resetComments = () => {
+  socialComments.innerHTML = '';
+  commentsShown = 0;
+  commentsLoader.classList.remove('hidden');
+};
+
+const closeBigPicture = () => {
+  bigPicture.classList.add('hidden');
+  document.body.classList.remove('modal-open');
+  commentsLoader.removeEventListener('click', onCommentsLoaderClick);
 };
 
 const openBigPicture = (photo) => {
   bigPictureImg.src = photo.url;
-  bigPictureImg.alt = photo.description;
   likesCount.textContent = photo.likes;
   socialCaption.textContent = photo.description;
+  resetComments();
 
-  // Convert comment strings back to objects for rendering
-  const comments = photo.comments.map((commentStr) => {
+  currentComments = photo.comments.map((commentStr) => {
     const parts = commentStr.split(', ').reduce((acc, part) => {
       const [key, value] = part.split(': ');
       acc[key] = value;
       return acc;
     }, {});
     return {
-      id: parts.id,
       avatar: parts.avatar,
       name: parts.name,
       message: parts.message
     };
   });
-
-  renderComments(comments);
-
-  // Update comments count
-  const commentsCount = bigPicture.querySelector('.comments-count');
-  commentsCount.textContent = comments.length;
-
-  // Hide comment count and loader as per requirements
-  socialCommentCount.classList.add('hidden');
-  commentsLoader.classList.add('hidden');
-  socialFooter.classList.add('hidden');
-
-  // Show the big picture and add modal class to body
+  socialCommentCount.classList.remove('hidden');
+  commentsLoader.classList.remove('hidden');
+  renderCommentsPortion();
+  commentsLoader.addEventListener('click', onCommentsLoaderClick);
+  document.addEventListener('keydown', onDocumentKeydown);
+  closeButton.addEventListener('click', onCloseButtonClick);
   bigPicture.classList.remove('hidden');
   document.body.classList.add('modal-open');
 };
 
-const closeBigPicture = () => {
-  bigPicture.classList.add('hidden');
-  document.body.classList.remove('modal-open');
-};
-
-closeButton.addEventListener('click', () => {
-  closeBigPicture();
-});
-
-document.addEventListener('keydown', (evt) => {
-  if (evt.key === 'Escape' && !bigPicture.classList.contains('hidden')) {
+function onDocumentKeydown(evt) {
+  if (evt.key === 'Escape') {
+    evt.preventDefault();
     closeBigPicture();
   }
-});
+}
+
+function onCloseButtonClick() {
+  closeBigPicture();
+}
 
 export { openBigPicture };
